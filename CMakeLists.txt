@@ -43,6 +43,12 @@ add_library(${PROJECT_NAME}
 # Add target link libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC asio)
 
+# Conditionally add logging definitions
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+message(STATUS "Logging enabled!")
+add_compile_definitions(ENABLE_LOGGING)
+endif()
+
 # --- Examples ---
 # Function to add examples automatically
 function(add_example FILE_NAME)
