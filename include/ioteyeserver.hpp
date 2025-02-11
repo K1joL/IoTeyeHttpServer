@@ -10,10 +10,10 @@
  * of the library.
  */
 
-#include "webserver.hpp"
-#include "http_request.hpp"
-#include "http_response.hpp"
-#include "http_resource.hpp"
+#include "httpserver/webserver.hpp"
+#include "httpserver/http_request.hpp"
+#include "httpserver/http_response.hpp"
+#include "httpserver/http_resource.hpp"
 #include "utils.hpp"
 #include "types.hpp"
 #include "http_status_codes.hpp"
