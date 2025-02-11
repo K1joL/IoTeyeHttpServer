@@ -1,0 +1,5 @@
+# cmake/ioteyeserverConfig.cmake.in
+@PACKAGE_INIT@
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
+include(CMakeFindDependencyMacro)
+check_required_components(@PROJECT_NAME@)

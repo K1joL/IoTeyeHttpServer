@@ -1,0 +1,19 @@
+# Compute the installation prefix relative to this file.
+get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../../" ABSOLUTE)
+
+# Import the library
+find_library(ioteyeserver_LIBRARY NAMES ioteyeserver PATHS "${_IMPORT_PREFIX}/lib" NO_DEFAULT_PATH)
+message(STATUS "_IMPORT_PREFIX: ${_IMPORT_PREFIX}")
+# Check if the library was found
+if(NOT ioteyeserver_LIBRARY)
+    message(FATAL_ERROR "ioteyeserver library not found")
+endif()
+
+set(ioteyeserver_VERSION @PROJECT_VERSION@)
+
+add_library(ioteyeserver STATIC IMPORTED)
+set_target_properties(ioteyeserver PROPERTIES
+    IMPORTED_LOCATION "${ioteyeserver_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
+    VERSION @PROJECT_VERSION@
+)

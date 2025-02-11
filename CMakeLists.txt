@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(ioteyeserverlib VERSION 1.0.0)
+project(ioteyeserver VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -92,7 +92,7 @@ add_test(NAME webserver_tests COMMAND ioteye_tests)
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     set(LIB_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/lib/)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
-    set(LIB_INSTALL_PATH /usr/lib/)
+    set(LIB_INSTALL_PATH /usr/local/lib/)
 endif()
 
 install(TARGETS ${PROJECT_NAME}
@@ -103,6 +103,34 @@ install(TARGETS ${PROJECT_NAME}
 
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/)
 
+# Create and install the CMake configuration files
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ioteyeserverConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverConfig.cmake"
+    INSTALL_DESTINATION lib/cmake/ioteyeserver
+    PATH_VARS CMAKE_INSTALL_PREFIX
+)
+
+configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ioteyeserverTargets.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverTargets.cmake"
+    INSTALL_DESTINATION lib/cmake/ioteyeserver
+    PATH_VARS CMAKE_INSTALL_PREFIX
+)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY AnyNewerVersion
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverConfigVersion.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverTargets.cmake"
+    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/ioteyeserver"
+)
 # make uninstall
 add_custom_target("uninstall" COMMENT "Uninstall installed files")
 add_custom_command(
