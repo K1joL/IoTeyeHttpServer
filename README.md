@@ -14,6 +14,7 @@ IotEye Server is a lightweight, configurable HTTP server based on [ASIO library]
 
 - C++17 or later
 - CMake 3.18 or later
+- ASIO 1.30.2 or later
 
 ### Installation
 
