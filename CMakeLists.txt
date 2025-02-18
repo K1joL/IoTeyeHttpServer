@@ -113,7 +113,7 @@ install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${LIB_INSTALL_PATH}
 )
 
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/)
+install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
 
 # Create and install the CMake configuration files
 include(CMakePackageConfigHelpers)
