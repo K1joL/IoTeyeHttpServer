@@ -30,6 +30,29 @@ IoTeye Server is a lightweight, configurable HTTP server based on [ASIO library]
    cd build
    cmake .. && cmake --build .
    ```
+    ---
+    **Build Options**
+
+    The project supports several build options that can be configured via CMake:
+
+    - **CMAKE_BUILD_TYPE**: Specifies the build type. Default is `Release`.
+    ```sh
+    cmake -DCMAKE_BUILD_TYPE=Debug ..
+    ```
+    - **ENABLE_LOGGING**: Enables logging when the build type is `Debug`.
+    ```sh
+    cmake -DCMAKE_BUILD_TYPE=Debug ..
+    ```
+    - **ASIO_ENABLE_INSTALL**: Enables or disables the installation of the ASIO library. Default is `ON`.
+    ```sh
+    cmake -DASIO_ENABLE_INSTALL=OFF ..
+    ```
+
+    - **ASIO_TAG**: Specifies the git tag for the ASIO library. Default is `asio-1-31-0`.
+    ```sh
+    cmake -DASIO_TAG=asio-1-32-0 ..
+    ```
+    ---
 3. **Install library**:
     ```sh
     sudo make install
