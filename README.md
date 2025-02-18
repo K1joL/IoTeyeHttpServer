@@ -1,6 +1,6 @@
-# IotEye Server
+# IoTeye Server
 
-IotEye Server is a lightweight, configurable HTTP server based on [ASIO library](https://think-async.com/Asio/). This project aims to provide a robust and efficient server implementation for handling HTTP requests, suitable for embedded systems and IoT devices.
+IoTeye Server is a lightweight, configurable HTTP server based on [ASIO library](https://think-async.com/Asio/). This project aims to provide a robust and efficient server implementation for handling HTTP requests, suitable for embedded systems and IoT devices.
 
 ## Features
 
@@ -20,29 +20,46 @@ IotEye Server is a lightweight, configurable HTTP server based on [ASIO library]
 
 1. **Clone the repository**:
    ```sh
-   git clone https://github.com/yourusername/ioteye-server.git
-   cd ioteye-server
+   git clone https://github.com/K1joL/IoTeyeHttpServer.git
+   cd IoTeyeHttpServer
    ```
 
 2. **Build the project**:
    ```sh
    mkdir build
    cd build
-   cmake ..
-   make
+   cmake .. && cmake --build .
    ```
-
-3. **Run the example**:
+3. **Install library**:
+    ```sh
+    sudo make install
+    ```
+4. **Run the examples (optional)**:
    ```sh
-   ./examples/main.cpp
+   ./main
+   ./simple_webserver
    ```
+5. **Uninstall library**:
+    ```sh
+    sudo make uninstall
+    ```
 
 ## Usage Example
 
 Below is an example of how to use the `IotEye Server` to set up a simple web server that handles basic HTTP requests.
 
+```CMake
+# Just use find_package to find all dependencies
+find_package(asio REQUIRED)
+find_package(ioteyeserver REQUIRED)
+find_package(Threads REQUIRED)
+...
+# Then link them
+target_link_libraries(main PRIVATE ioteyeserver Threads::Threads asio::asio)
+```
+
 ```cpp
-#include "ioteyeserver.hpp"
+#include <ioteyeserver.hpp>
 
 using namespace ioteye;
 
