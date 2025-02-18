@@ -3,7 +3,7 @@ get_filename_component(_IMPORT_PREFIX "${CMAKE_CURRENT_LIST_DIR}/../../../" ABSO
 
 # Import the library
 find_library(ioteyeserver_LIBRARY NAMES ioteyeserver PATHS "${_IMPORT_PREFIX}/lib" NO_DEFAULT_PATH)
-message(STATUS "_IMPORT_PREFIX: ${_IMPORT_PREFIX}")
+# message(STATUS "_IMPORT_PREFIX: ${_IMPORT_PREFIX}")
 # Check if the library was found
 if(NOT ioteyeserver_LIBRARY)
     message(FATAL_ERROR "ioteyeserver library not found")

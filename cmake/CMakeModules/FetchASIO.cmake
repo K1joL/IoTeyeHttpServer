@@ -1,57 +1,180 @@
-# cmake/FetchASIO.cmake
+#
+# MIT License
+#
+# Copyright (c) 2021 Olivier Le Doeuff (https://github.com/OlivierLDff/asio.cmake)
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+# associated documentation files (the "Software"), to deal in the Software without restriction,
+# including without limitation the rights to use, copy, modify, merge, publish, distribute,
+# sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all copies or
+# substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+# NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+# DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
+# OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+# Additional modifications are licensed under the MIT License
+# Copyright (c) 2025 Bogdan Shults aka K1joL
 
+# FetchASIO.cmake
+cmake_minimum_required(VERSION 3.14.0...3.24.0)
+
+# --- Options ---
+include(CMakeDependentOption)
+set(ASIO_REPOSITORY
+    "https://github.com/chriskohlhoff/asio"
+    CACHE STRING "asio git repository url"
+)
+set(ASIO_TAG
+    "asio-1-31-0"
+    CACHE STRING "asio git tag"
+)
+option(ASIO_USE_CPM "Download Asio with CPM instead of FetchContent" ON)
+option(
+    ASIO_CPM_FETCHCONTENT_COMPAT
+    "Should asio be declared with FetchContent functions to be compatible. This doesn't not allow CPM cache to work."
+    OFF
+)
+option(ASIO_NO_DEPRECATED "Disables Asio deprecated interfaces and functionality" ON)
+option(ASIO_SEPARATE_COMPILATION "Uses separately compiled source code for Asio's implementation" ON)
+
+if(BUILD_SHARED_LIBS)
+    set(ASIO_DYN_LINK_DEFAULT_VALUE ON)
+else()
+    set(ASIO_DYN_LINK_DEFAULT_VALUE OFF)
+endif()
+cmake_dependent_option(
+    ASIO_DYN_LINK
+    "Uses separately compiled source code for Asio's implementation, with symbols exported for inclusion as part of a shared library"
+    ${ASIO_DYN_LINK_DEFAULT_VALUE}
+    "ASIO_SEPARATE_COMPILATION"
+    OFF
+)
+option(ASIO_ENABLE_INSTALL "Install the asio standalone library" ON)
+
+# --- Library Type
+if(NOT ASIO_SEPARATE_COMPILATION)
+    set(ASIO_LIBRARY_TYPE INTERFACE)
+elseif(NOT ASIO_DYN_LINK)
+    set(ASIO_LIBRARY_TYPE STATIC)
+else()
+    set(ASIO_LIBRARY_TYPE SHARED)
+endif()
+
+# --- Declare ---
 function(fetch_asio)
-    cmake_parse_arguments(
-        FETCH_ASIO
-        ""
-        "VERSION;VERSION_STATUS"
-        ""
-        ${ARGN}
-    )
-
-    if(NOT DEFINED FETCH_ASIO_VERSION)
-        set(FETCH_ASIO_VERSION "1.30.2")
+    if(ASIO_CPM_FETCHCONTENT_COMPAT OR NOT ASIO_USE_CPM)
+        include(FetchContent)
+        FetchContent_Declare(
+            asio
+            GIT_REPOSITORY ${ASIO_REPOSITORY}
+            GIT_TAG ${ASIO_TAG}
+        )
+        FetchContent_GetProperties(asio)
     endif()
 
-    if(NOT DEFINED FETCH_ASIO_VERSION_STATUS)
-        set(FETCH_ASIO_VERSION_STATUS "Stable")
+    if(ASIO_ENABLE_INSTALL)
+        include(GNUInstallDirs)
     endif()
 
-    set(ASIO_SOURCEFORGE_URL "https://sourceforge.net/projects/asio/files/asio/${FETCH_ASIO_VERSION}%20(${FETCH_ASIO_VERSION_STATUS})/asio-${FETCH_ASIO_VERSION}.tar.gz/download") #Adjust URL as necessary
-    set(ASIO_DOWNLOAD_DIR "${CMAKE_BINARY_DIR}/_deps/asio-download")
-    set(ASIO_EXTRACT_DIR "${CMAKE_BINARY_DIR}/_deps/asio-src")
-    set(ASIO_INCLUDE_DIR "${ASIO_EXTRACT_DIR}/asio-${FETCH_ASIO_VERSION}/include")
+    if(NOT asio_POPULATED AND NOT TARGET asio)
+        # --- Download ---
+        if(ASIO_USE_CPM)
+            if(NOT CPM_INITIALIZED)
+                include(${CMAKE_SOURCE_DIR}/cmake/CMakeModules/get_cpm.cmake)
+            endif()
+            CPMAddPackage(
+                NAME asio
+                GIT_REPOSITORY ${ASIO_REPOSITORY}
+                GIT_TAG ${ASIO_TAG}
+                DOWNLOAD_ONLY TRUE
+            )
+        else()
+            message(STATUS "Download asio from ${ASIO_REPOSITORY}:${ASIO_TAG}")
+            FetchContent_MakeAvailable(asio)
+        endif()
+        # --- Find Version ---
+        file(STRINGS "${asio_SOURCE_DIR}/asio/include/asio/version.hpp" ASIO_VERSION
+            REGEX "^#define ASIO_VERSION [0-9]+"
+        )
+        string(REGEX REPLACE "^#define ASIO_VERSION [0-9]+ // ([0-9.]+)$" "\\1" ASIO_VERSION
+            "${ASIO_VERSION}"
+        )
+        set(ASIO_VERSION
+            ${ASIO_VERSION}
+            CACHE STRING "asio library version" FORCE
+        )
 
-    # Check if ASIO is already downloaded and extracted
-    if(NOT EXISTS "${ASIO_INCLUDE_DIR}/asio/version.hpp")
-        # Create download and extract directories
-        file(MAKE_DIRECTORY "${ASIO_DOWNLOAD_DIR}")
-        file(MAKE_DIRECTORY "${ASIO_EXTRACT_DIR}")
-
-        # Download ASIO
-        file(DOWNLOAD "${ASIO_SOURCEFORGE_URL}" "${ASIO_DOWNLOAD_DIR}/asio-${FETCH_ASIO_VERSION}.tar.gz"
-            SHOW_PROGRESS
-            STATUS download_status)
-
-        list(GET download_status 0 download_code)
-        if(NOT "${download_code}" STREQUAL "0")
-            message(FATAL_ERROR "Failed to download ASIO from SourceForge: ${download_status}")
+        # --- Library Scopes ---
+        if(ASIO_LIBRARY_TYPE STREQUAL INTERFACE)
+            set(ASIO_TARGET_INCLUDE_DIRECTORIES_SCOPE INTERFACE)
+            set(ASIO_TARGET_LINK_LIBRARIES_SCOPE INTERFACE)
+            set(ASIO_TARGET_COMPILE_FEATURES_SCOPE INTERFACE)
+            set(ASIO_TARGET_COMPILE_DEFINITIONS_SCOPE INTERFACE)
+        else()
+            set(ASIO_TARGET_INCLUDE_DIRECTORIES_SCOPE PUBLIC)
+            set(ASIO_TARGET_LINK_LIBRARIES_SCOPE PRIVATE)
+            set(ASIO_TARGET_COMPILE_FEATURES_SCOPE PUBLIC)
+            set(ASIO_TARGET_COMPILE_DEFINITIONS_SCOPE PUBLIC)
         endif()
 
-        # Extracting ASIO
-        file(ARCHIVE_EXTRACT INPUT "${ASIO_DOWNLOAD_DIR}/asio-${FETCH_ASIO_VERSION}.tar.gz" DESTINATION "${ASIO_EXTRACT_DIR}")
+        # --- Configure ---
+        add_library(
+            asio ${ASIO_LIBRARY_TYPE} $<$<NOT:$<STREQUAL:${ASIO_LIBRARY_TYPE},INTERFACE>>:${asio_SOURCE_DIR}/asio/src/asio.cpp>
+        )
+        add_library(asio::asio ALIAS asio)
+        target_include_directories(
+            asio SYSTEM ${ASIO_TARGET_INCLUDE_DIRECTORIES_SCOPE}
+            $<BUILD_INTERFACE:${asio_SOURCE_DIR}/asio/include>
+            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        )
 
-        # Check if extraction was successful.
-        if(NOT EXISTS "${ASIO_INCLUDE_DIR}/asio/version.hpp")
-            message(FATAL_ERROR "Failed to extract ASIO.  Check execute_process command.")
+        find_package(Threads)
+        target_link_libraries(asio ${ASIO_TARGET_LINK_LIBRARIES_SCOPE} Threads::Threads)
+
+        target_compile_features(asio ${ASIO_TARGET_COMPILE_FEATURES_SCOPE} cxx_std_11)
+        target_compile_definitions(
+            asio
+            ${ASIO_TARGET_COMPILE_DEFINITIONS_SCOPE}
+            -DASIO_STANDALONE
+            $<$<NOT:$<STREQUAL:${ASIO_LIBRARY_TYPE},INTERFACE>>:ASIO_SEPARATE_COMPILATION>
+            $<$<STREQUAL:${ASIO_LIBRARY_TYPE},SHARED>:ASIO_DYN_LINK>
+            $<$<BOOL:${ASIO_NO_DEPRECATED}>:ASIO_NO_DEPRECATED>
+        )
+        # Fix warning : "Please define _WIN32_WINNT or _WIN32_WINDOWS appropriately."
+        # https://stackoverflow.com/questions/9742003/platform-detection-in-cmake
+        if(WIN32 AND CMAKE_SYSTEM_VERSION)
+            set(ver ${CMAKE_SYSTEM_VERSION})
+            string(REPLACE "." "" ver ${ver})
+            string(REGEX REPLACE "([0-9])" "0\\1" ver ${ver})
+            set(version "0x${ver}")
+            target_compile_definitions(
+                asio ${ASIO_TARGET_COMPILE_DEFINITIONS_SCOPE} -D_WIN32_WINNT=${version}
+            )
         endif()
-    else()
-        message(STATUS "ASIO already downloaded and extracted.")
     endif()
 
-    # Add asio lib
-    add_library(asio INTERFACE)
-    target_compile_definitions(asio INTERFACE ASIO_STANDALONE)
-    target_include_directories(asio INTERFACE "${ASIO_INCLUDE_DIR}")
-    target_link_libraries(asio INTERFACE pthread)
+    # --- Install
+    if(ASIO_ENABLE_INSTALL)
+        if(NOT CPM_INITIALIZED)
+            include(${CMAKE_SOURCE_DIR}/cmake/CMakeModules/get_cpm.cmake)
+        endif()
+        CPMAddPackage("gh:TheLartians/PackageProject.cmake@1.12.0")
+        packageProject(
+            NAME asio
+            VERSION ${ASIO_VERSION}
+            NAMESPACE asio
+            BINARY_DIR ${PROJECT_BINARY_DIR}
+            INCLUDE_DIR ${asio_SOURCE_DIR}/asio/include
+            INCLUDE_DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            DISABLE_VERSION_SUFFIX YES
+            COMPATIBILITY SameMajorVersion
+            DEPENDENCIES "Threads"
+        )
+    endif()
 endfunction()
