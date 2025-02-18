@@ -31,7 +31,8 @@ std::shared_ptr<HttpResponse> HttpResourceHandler::renderDELETE(const HttpReques
 }
 
 std::shared_ptr<HttpResponse> HttpResourceHandler::empty_render(const HttpRequest& req) {
-    return std::shared_ptr<HttpResponse>();
+    (void)req; // Suppresses unused parameter warning
+    return std::make_shared<HttpResponse>();
 }
 
 void HttpResource::setAllowing(HttpMethod_t httpMethod, bool allowed) {
