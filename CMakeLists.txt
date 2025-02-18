@@ -30,9 +30,8 @@ else()
         ON
     )
     option(ASIO_ENABLE_INSTALL "Install asio target." ON)
-    if(NOT ASIO_ENABLE_INSTALL)
+    if(ASIO_ENABLE_INSTALL)
         message(STATUS "ASIO library will be downloaded and installed.\nUse ASIO_ENABLE_INSTALL=OFF to off this option")
-        set(ASIO_ENABLE_INSTALL ON)
     endif()
     option(ASIO_TAG "Asio git tag. Format: asio-*-**-*" "asio-1-31-0")
     # Download this repository
