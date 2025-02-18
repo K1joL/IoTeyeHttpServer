@@ -7,7 +7,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 include_directories(include)
-include_directories(include/httpserver)
 include(cmake/CMakeModules/FetchASIO.cmake)
 
 # Set the default build type to Release if not specified
@@ -40,11 +39,11 @@ endif()
 # --- End Download ASIO ---
 
 add_library(${PROJECT_NAME}
-    src/httpserver/http_resource.cpp
-    src/httpserver/http_request.cpp
-    src/httpserver/http_response.cpp
-    src/httpserver/webserver.cpp
-    src/utils.cpp
+    src/ioteyeserver/httpserver/http_resource.cpp
+    src/ioteyeserver/httpserver/http_request.cpp
+    src/ioteyeserver/httpserver/http_response.cpp
+    src/ioteyeserver/httpserver/webserver.cpp
+    src/ioteyeserver/utils.cpp
 )
 
 # Add target link libraries
@@ -85,11 +84,6 @@ FetchContent_MakeAvailable(googletest)
 # Add tests executable
 add_executable(ioteye_tests
     tests/webserver_test.cpp
-    src/utils.cpp
-    src/httpserver/http_request.cpp
-    src/httpserver/http_response.cpp
-    src/httpserver/http_resource.cpp
-    src/httpserver/webserver.cpp
 )
 
 target_link_libraries(ioteye_tests
@@ -113,7 +107,8 @@ install(TARGETS ${PROJECT_NAME}
     RUNTIME DESTINATION ${LIB_INSTALL_PATH}
 )
 
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
+install(FILES include/ioteyeserver.hpp DESTINATION ${CMAKE_INSTALL_PREFIX}/include) # Install general header to include directly
+install(DIRECTORY include/ioteyeserver/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}) # Install rest of headers to ioteyeserver
 
 # Create and install the CMake configuration files
 include(CMakePackageConfigHelpers)

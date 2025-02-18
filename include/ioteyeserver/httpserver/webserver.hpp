@@ -14,12 +14,12 @@
 #include <unordered_map>
 #include <vector>
 
-#include "http_request.hpp"
-#include "http_resource.hpp"
-#include "http_response.hpp"
-#include "logging.hpp"
-#include "types.hpp"
-#include "utils.hpp"
+#include "ioteyeserver/httpserver/http_request.hpp"
+#include "ioteyeserver/httpserver/http_resource.hpp"
+#include "ioteyeserver/httpserver/http_response.hpp"
+#include "ioteyeserver/logging.hpp"
+#include "ioteyeserver/types.hpp"
+#include "ioteyeserver/utils.hpp"
 
 namespace ioteye {
 using ResourceMap = std::unordered_map<std::string, std::shared_ptr<HttpResource>>;

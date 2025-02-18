@@ -8,8 +8,8 @@
 #include <string>
 #include <unordered_map>
 
-#include "http_status_codes.hpp"
-#include "logging.hpp"
+#include "ioteyeserver/http_status_codes.hpp"
+#include "ioteyeserver/logging.hpp"
 
 namespace ioteye {
 class HttpResponse {

@@ -1,5 +1,3 @@
-#include "httpserver/webserver.hpp"
-
 #include <gtest/gtest.h>
 
 #include <asio.hpp>
@@ -12,10 +10,7 @@
 #include <thread>
 #include <unordered_map>
 
-#include "httpserver/http_request.hpp"
-#include "httpserver/http_resource.hpp"
-#include "httpserver/http_response.hpp"
-#include "utils.hpp"
+#include <ioteyeserver.hpp>
 
 namespace ioteye {
 

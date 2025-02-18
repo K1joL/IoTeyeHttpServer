@@ -10,12 +10,12 @@
  * of the library.
  */
 
-#include "httpserver/webserver.hpp"
-#include "httpserver/http_request.hpp"
-#include "httpserver/http_response.hpp"
-#include "httpserver/http_resource.hpp"
-#include "utils.hpp"
-#include "types.hpp"
-#include "http_status_codes.hpp"
+#include "ioteyeserver/httpserver/webserver.hpp"
+#include "ioteyeserver/httpserver/http_request.hpp"
+#include "ioteyeserver/httpserver/http_response.hpp"
+#include "ioteyeserver/httpserver/http_resource.hpp"
+#include "ioteyeserver/utils.hpp"
+#include "ioteyeserver/types.hpp"
+#include "ioteyeserver/http_status_codes.hpp"
 
 #endif // IOTEYE_SERVER_HPP

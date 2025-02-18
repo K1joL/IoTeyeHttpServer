@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
-#include "http_request.hpp"
-#include "http_response.hpp"
-#include "logging.hpp"
-#include "types.hpp"
-#include "utils.hpp"
+#include "ioteyeserver/httpserver/http_request.hpp"
+#include "ioteyeserver/httpserver/http_response.hpp"
+#include "ioteyeserver/logging.hpp"
+#include "ioteyeserver/types.hpp"
+#include "ioteyeserver/utils.hpp"
 
 namespace ioteye {
 class HttpResourceHandler {

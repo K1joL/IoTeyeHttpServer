@@ -1,4 +1,4 @@
-#include "http_response.hpp"
+#include "ioteyeserver/httpserver/http_response.hpp"
 
 namespace ioteye {
 

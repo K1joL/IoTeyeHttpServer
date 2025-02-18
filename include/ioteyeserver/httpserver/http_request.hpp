@@ -4,7 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "types.hpp"
+#include "ioteyeserver/types.hpp"
 
 namespace ioteye {
 class HttpRequest {
