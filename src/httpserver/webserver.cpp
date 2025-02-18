@@ -18,16 +18,61 @@ Webserver::Webserver(int tcpPort, int udpPort, bool udpOn, ResourceMap resourceM
           {HttpMethod::DELETE, [](std::shared_ptr<HttpResourceHandler> resource,
                                   const HttpRequest& request) { return resource->renderDELETE(request); }}},
       m_bufferSize(bufferSize) {
-    m_udpSocket = std::make_shared<asio::ip::udp::socket>(
-        m_ioContext, asio::ip::udp::endpoint(asio::ip::udp::v4(), m_udpPort));
+    if (m_isUdpOn)
+        m_udpSocket = std::make_shared<asio::ip::udp::socket>(
+            m_ioContext, asio::ip::udp::endpoint(asio::ip::udp::v4(), m_udpPort));
+    debug::log("Webserver constructed");
 }
 
 Webserver::Webserver() : m_tcpAcceptor(m_ioContext) {
+    debug::log("Webserver default constructed");
 }
 
 Webserver::~Webserver() {
     if (m_keepRunning)
         shutdown();
+}
+
+Webserver::Webserver(Webserver&& other) noexcept
+    : m_tcpPort(other.m_tcpPort),
+      m_udpPort(other.m_udpPort),
+      m_resourceMap(std::move(other.m_resourceMap)),
+      m_ioContext(),
+      m_tcpAcceptor(m_ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 0)),
+      m_isUdpOn(other.m_isUdpOn),
+      m_remoteEndpoint(),
+      m_keepRunning(false),
+      m_coutMutex(),
+      m_methodHandlers(std::move(other.m_methodHandlers)),
+      m_ioContextThread(),
+      m_bufferSize(other.m_bufferSize) {
+    other.shutdown();
+    debug::log("Webserver moved");
+    m_tcpAcceptor =
+        asio::ip::tcp::acceptor(m_ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), m_tcpPort));
+    m_udpSocket = std::make_shared<asio::ip::udp::socket>(
+        m_ioContext, asio::ip::udp::endpoint(asio::ip::udp::v4(), m_udpPort));
+}
+
+Webserver& Webserver::operator=(Webserver&& other) noexcept {
+    debug::log("Webserver moved and assigned");
+    if (this == &other)
+        return *this;
+    this->shutdown();
+    other.shutdown();
+
+    m_tcpPort = other.m_tcpPort;
+    m_udpPort = other.m_udpPort;
+    m_isUdpOn = other.m_isUdpOn;
+    m_bufferSize = other.m_bufferSize;
+    m_tcpAcceptor =
+        asio::ip::tcp::acceptor(m_ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), m_tcpPort));
+    m_udpSocket = std::make_shared<asio::ip::udp::socket>(
+        m_ioContext, asio::ip::udp::endpoint(asio::ip::udp::v4(), m_udpPort));
+    m_resourceMap = std::move(other.m_resourceMap);
+    m_methodHandlers = std::move(other.m_methodHandlers);
+    m_keepRunning = false;
+    return *this;
 }
 
 void Webserver::start() {

@@ -30,6 +30,12 @@ public:
     Webserver();
     ~Webserver();
 
+    Webserver(const Webserver&) = delete;
+    Webserver& operator=(const Webserver&) = delete;
+
+    Webserver(Webserver&& other) noexcept;
+    Webserver& operator=(Webserver&& other) noexcept;
+
     void start();
     void shutdown();
 
