@@ -102,6 +102,7 @@ std::shared_ptr<HttpResponse> createMethodNotAllowed(const std::string& allowedM
 
 void sendUdpResponse(const HttpResponse& response, std::shared_ptr<asio::ip::udp::socket> socket,
                      asio::ip::udp::endpoint& destination) {
+    debug::log(response.toString());
     socket->async_send_to(asio::buffer(response.toString()), destination,
                           [](const asio::error_code& error, std::size_t bytesTransfered) {
                               if (!error) {
@@ -114,6 +115,7 @@ void sendUdpResponse(const HttpResponse& response, std::shared_ptr<asio::ip::udp
 }
 
 void sendTcpResponse(const HttpResponse& response, std::shared_ptr<asio::ip::tcp::socket> socket) {
+    debug::log(response.toString());
     asio::async_write(*socket, asio::buffer(response.toString()),
                       [socket](const asio::error_code& error, std::size_t bytesTransfered) {
                           if (!error) {
