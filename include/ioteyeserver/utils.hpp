@@ -36,7 +36,7 @@ namespace ioteye::util {
 std::vector<std::string> splitString(const std::string& str, char delimiter);
 
 HttpMethod stringToHttpMethod(const std::string& httpMethodName);
-std::string httpMethodToString(HttpMethod httpMethodCode);
+std::string httpMethodToString(HttpMethod_t httpMethodCode);
 
 }  // namespace ioteye::util
 

@@ -48,8 +48,8 @@ HttpMethod stringToHttpMethod(const std::string& httpMethodName) {
         return stringToHttpMethod_map[httpMethodName];
 }
 
-std::string httpMethodToString(HttpMethod httpMethodCode) {
-    static std::unordered_map<HttpMethod, std::string> httpMethodToString_map = {
+std::string httpMethodToString(HttpMethod_t httpMethodCode) {
+    static std::unordered_map<HttpMethod_t, std::string> httpMethodToString_map = {
         {HttpMethod::GET, "GET"},
         {HttpMethod::POST, "POST"},
         {HttpMethod::PUT, "PUT"},
