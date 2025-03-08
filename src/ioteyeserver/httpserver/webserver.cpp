@@ -287,7 +287,8 @@ std::shared_ptr<HttpResponse> Webserver::handleRequest(const HttpRequest& reques
     }
     auto resource = resourceIt->second;
     auto methodHandlerIt = m_methodHandlers.find(request.getMethod());
-    if (methodHandlerIt == m_methodHandlers.end()) {
+    if (methodHandlerIt == m_methodHandlers.end() ||
+        !resource->isAllowed(request.getMethod())) {
         debug::log("handleRequest: Method not allowed");
         return createMethodNotAllowed(resource->getAllowedMethodsAsString());
     }
