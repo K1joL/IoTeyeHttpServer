@@ -42,6 +42,7 @@ namespace ioteye {
 class MockResourceHandler : public HttpResourceHandler {
 public:
     std::shared_ptr<HttpResponse> renderGET(const HttpRequest& req) override {
+        (void)req;
         auto response = std::make_shared<HttpResponse>();
         response->setStatusCode(200);
         response->setBody("GET Response");
@@ -49,6 +50,7 @@ public:
     }
 
     std::shared_ptr<HttpResponse> renderPOST(const HttpRequest& req) override {
+        (void)req; 
         auto response = std::make_shared<HttpResponse>();
         response->setStatusCode(201);
         response->setBody("POST Response: " + req.getBody());
@@ -56,6 +58,7 @@ public:
     }
 
     std::shared_ptr<HttpResponse> renderPUT(const HttpRequest& req) override {
+        (void)req; 
         auto response = std::make_shared<HttpResponse>();
         response->setStatusCode(200);
         response->setBody("PUT Response: " + req.getArg("id"));
@@ -63,6 +66,7 @@ public:
     }
 
     std::shared_ptr<HttpResponse> renderDELETE(const HttpRequest& req) override {
+        (void)req; 
         auto response = std::make_shared<HttpResponse>();
         response->setStatusCode(204);
         response->setBody("");

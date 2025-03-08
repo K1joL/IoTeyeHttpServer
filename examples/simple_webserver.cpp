@@ -30,6 +30,7 @@ class HelloWorldHandler : public ioteye::HttpResourceHandler {
 public:
     std::shared_ptr<ioteye::HttpResponse> renderGET(const ioteye::HttpRequest& req) override {
         auto response = std::make_shared<ioteye::HttpResponse>(ioteye::OK, "Hello World!");
+        (void)req; 
         return response;
     }
 };
