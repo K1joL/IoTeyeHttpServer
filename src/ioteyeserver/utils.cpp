@@ -37,10 +37,10 @@ std::vector<std::string> splitString(const std::string& str, char delimiter) {
 
 HttpMethod stringToHttpMethod(const std::string& httpMethodName) {
     static std::unordered_map<std::string, HttpMethod> stringToHttpMethod_map = {
-        {"GET", HttpMethod::GET},
-        {"POST", HttpMethod::POST},
-        {"PUT", HttpMethod::PUT},
-        {"DELETE", HttpMethod::DELETE},
+        {"GET", HttpMethod::HTTP_GET},
+        {"POST", HttpMethod::HTTP_POST},
+        {"PUT", HttpMethod::HTTP_PUT},
+        {"DELETE", HttpMethod::HTTP_DELETE},
     };
     if (stringToHttpMethod_map.find(httpMethodName) == stringToHttpMethod_map.end())
         return HttpMethod::UNKNOWN;
@@ -50,10 +50,10 @@ HttpMethod stringToHttpMethod(const std::string& httpMethodName) {
 
 std::string httpMethodToString(HttpMethod_t httpMethodCode) {
     static std::unordered_map<HttpMethod_t, std::string> httpMethodToString_map = {
-        {HttpMethod::GET, "GET"},
-        {HttpMethod::POST, "POST"},
-        {HttpMethod::PUT, "PUT"},
-        {HttpMethod::DELETE, "DELETE"},
+        {HttpMethod::HTTP_GET, "GET"},
+        {HttpMethod::HTTP_POST, "POST"},
+        {HttpMethod::HTTP_PUT, "PUT"},
+        {HttpMethod::HTTP_DELETE, "DELETE"},
     };
     if (httpMethodToString_map.find(httpMethodCode) == httpMethodToString_map.end())
         return "UNKNOWN";

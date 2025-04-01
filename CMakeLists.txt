@@ -26,9 +26,15 @@ project(ioteyeserver VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_compile_options(-Wall -Wextra -Wpedantic)
+if(MSVC)
+    add_compile_options(/W3)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
 include_directories(include)
+include_directories(include/ioteyeserver)
+include_directories(include/ioteyeserver/httpserver)
 include(cmake/CMakeModules/FetchASIO.cmake)
 
 # Set the default build type to Release if not specified
@@ -90,31 +96,34 @@ file(GLOB EXAMPLE_FILES "examples/*.cpp")
 foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
     add_example(${EXAMPLE_FILE})
 endforeach()
+if(MSVC)
+    message(WARNING "Tests cannot be built with MSVC!")
+else()
+    # --- Tests ---
+    enable_testing()
 
-# --- Tests ---
-enable_testing()
+    # Add GoogleTest (you might need to adjust the path based on your installation)
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest
+        GIT_TAG v1.14.0 # Or the version you prefer
+    )
+    FetchContent_MakeAvailable(googletest)
 
-# Add GoogleTest (you might need to adjust the path based on your installation)
-include(FetchContent)
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest
-    GIT_TAG v1.14.0 # Or the version you prefer
-)
-FetchContent_MakeAvailable(googletest)
+    # Add tests executable
+    add_executable(ioteye_tests
+        tests/webserver_test.cpp
+    )
 
-# Add tests executable
-add_executable(ioteye_tests
-    tests/webserver_test.cpp
-)
+    target_link_libraries(ioteye_tests
+        ${PROJECT_NAME}
+        GTest::gtest_main
+        asio::asio
+    )
 
-target_link_libraries(ioteye_tests
-    ${PROJECT_NAME}
-    GTest::gtest_main
-    asio::asio
-)
-
-add_test(NAME webserver_tests COMMAND ioteye_tests)
+    add_test(NAME webserver_tests COMMAND ioteye_tests)
+endif()
 
 # --- Include Install/Uninstall Module ---
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)

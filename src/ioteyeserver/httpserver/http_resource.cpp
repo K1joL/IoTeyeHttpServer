@@ -29,10 +29,10 @@ HttpResource::HttpResource(std::shared_ptr<HttpResourceHandler> handler,
                            std::string uri)
     : m_handler(handler), m_uri(uri) {
     m_isValid = createRegexFromURI(uri);
-    m_allowedMethods = {{HttpMethod::GET, true},
-                        {HttpMethod::POST, true},
-                        {HttpMethod::PUT, true},
-                        {HttpMethod::DELETE, true}};
+    m_allowedMethods = {{HttpMethod::HTTP_GET, true},
+                        {HttpMethod::HTTP_POST, true},
+                        {HttpMethod::HTTP_PUT, true},
+                        {HttpMethod::HTTP_DELETE, true}};
 }
 
 std::shared_ptr<HttpResponse> HttpResourceHandler::render(

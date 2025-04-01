@@ -33,13 +33,13 @@ Webserver::Webserver(int tcpPort, int udpPort, bool udpOn, ResourceMap resourceM
       m_tcpAcceptor(m_ioContext, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), tcpPort)),
       m_isUdpOn(udpOn),
       m_methodHandlers{
-          {HttpMethod::GET, [](std::shared_ptr<HttpResourceHandler> handler,
+          {HttpMethod::HTTP_GET, [](std::shared_ptr<HttpResourceHandler> handler,
                                const HttpRequest& request) { return handler->renderGET(request); }},
-          {HttpMethod::POST, [](std::shared_ptr<HttpResourceHandler> handler,
+          {HttpMethod::HTTP_POST, [](std::shared_ptr<HttpResourceHandler> handler,
                                 const HttpRequest& request) { return handler->renderPOST(request); }},
-          {HttpMethod::PUT, [](std::shared_ptr<HttpResourceHandler> handler,
+          {HttpMethod::HTTP_PUT, [](std::shared_ptr<HttpResourceHandler> handler,
                                const HttpRequest& request) { return handler->renderPUT(request); }},
-          {HttpMethod::DELETE, [](std::shared_ptr<HttpResourceHandler> handler,
+          {HttpMethod::HTTP_DELETE, [](std::shared_ptr<HttpResourceHandler> handler,
                                   const HttpRequest& request) { return handler->renderDELETE(request); }}},
       m_bufferSize(bufferSize) {
     if (m_isUdpOn)

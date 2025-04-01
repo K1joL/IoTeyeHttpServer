@@ -34,10 +34,10 @@ using HttpMethod_t = uint16_t;
 
 enum HttpMethod {
     UNKNOWN,
-    GET,
-    POST,
-    PUT,
-    DELETE,
+    HTTP_GET,
+    HTTP_POST,
+    HTTP_PUT,
+    HTTP_DELETE,
     HTTP_METHOD_MAX,
 };
 
