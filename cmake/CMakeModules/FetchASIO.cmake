@@ -85,6 +85,7 @@ function(fetch_asio)
     if(NOT asio_POPULATED AND NOT TARGET asio)
         # --- Download ---
         if(ASIO_USE_CPM)
+            message(STATUS "Download asio with CPM")
             if(NOT CPM_INITIALIZED)
                 include(${CMAKE_SOURCE_DIR}/cmake/CMakeModules/get_cpm.cmake)
             endif()

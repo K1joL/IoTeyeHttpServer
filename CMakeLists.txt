@@ -49,16 +49,15 @@ if(asio_FOUND)
     message(STATUS "ASIO library found.")
 else()
     message(STATUS "ASIO library not found.")
-    # Force the script to use FetchContent and not CPM internally to fetch asio
-    option(ASIO_USE_CPM "Download Asio with CPM instead of FetchContent" OFF)
+    option(ASIO_USE_CPM "Download Asio with CPM instead of FetchContent" ON)
     option(
         ASIO_CPM_FETCHCONTENT_COMPAT
         "Should asio be declared with FetchContent functions to be compatible. This doesn't not allow CPM cache to work."
-        ON
+        OFF
     )
     option(ASIO_ENABLE_INSTALL "Install asio target." ON)
     if(ASIO_ENABLE_INSTALL)
-        message(STATUS "ASIO library will be downloaded and installed.\nUse ASIO_ENABLE_INSTALL=OFF to off this option")
+        message(STATUS "ASIO library will be installed. Use ASIO_ENABLE_INSTALL=OFF to off this option")
     endif()
     option(ASIO_TAG "Asio git tag. Format: asio-*-**-*" "asio-1-31-0")
     # Download this repository
