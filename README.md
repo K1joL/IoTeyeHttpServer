@@ -35,11 +35,7 @@ IoTeye Server is a lightweight, configurable HTTP server based on [ASIO library]
 
     The project supports several build options that can be configured via CMake:
 
-    - **CMAKE_BUILD_TYPE**: Specifies the build type. Default is `Release`.
-    ```sh
-    cmake -DCMAKE_BUILD_TYPE=Debug ..
-    ```
-    - **ENABLE_LOGGING**: Enables logging when the build type is `Debug`.
+    - **CMAKE_BUILD_TYPE**: Specifies the build type. Default is `Release`. Enables logging when the build type is `Debug`.
     ```sh
     cmake -DCMAKE_BUILD_TYPE=Debug ..
     ```
