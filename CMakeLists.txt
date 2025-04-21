@@ -112,6 +112,10 @@ else()
 
     # Add tests executable
     add_executable(ioteye_tests
+        tests/utils_test.cpp
+        tests/http_resource_test.cpp
+        tests/http_response_test.cpp
+        tests/http_request_test.cpp
         tests/webserver_test.cpp
     )
 
