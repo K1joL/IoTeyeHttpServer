@@ -39,6 +39,8 @@ public:
     void setArg(const std::string& argName, const std::string& argValue) {
         m_args[argName] = argValue;
     }
+    void clearArgs();
+
     // Getters
     HttpMethod getMethod() const;
     const std::string& getUri() const;

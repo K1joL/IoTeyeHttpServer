@@ -33,6 +33,10 @@ std::string HttpRequest::getArg(const std::string& arg_name) const {
     return "";
 }
 
+void HttpRequest::clearArgs() {
+    m_args.clear();
+}
+
 // Getters
 HttpMethod HttpRequest::getMethod() const {
     return m_method;
@@ -42,7 +46,8 @@ const std::string& HttpRequest::getUri() const {
     return m_uri;
 }
 
-const std::unordered_map<std::string, std::string>& HttpRequest::getArgs() const {
+const std::unordered_map<std::string, std::string>& HttpRequest::getArgs()
+    const {
     return m_args;
 }
 
@@ -63,7 +68,8 @@ void HttpRequest::setUri(const std::string& uri) {
     m_uri = uri;
 }
 
-void HttpRequest::setArgs(const std::unordered_map<std::string, std::string>& args) {
+void HttpRequest::setArgs(
+    const std::unordered_map<std::string, std::string>& args) {
     m_args = args;
 }
 
