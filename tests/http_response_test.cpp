@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <ioteyeserver.hpp>
 
 TEST(HttpResponseTest, ConstructsAndFormatsCorrectly) {

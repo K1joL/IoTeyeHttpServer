@@ -29,12 +29,11 @@ SOFTWARE.
 #include <asio/ts/internet.hpp>
 #include <chrono>
 #include <iostream>
+#include <ioteyeserver.hpp>
 #include <memory>
 #include <string>
 #include <thread>
 #include <unordered_map>
-
-#include <ioteyeserver.hpp>
 
 namespace ioteye {
 
@@ -50,7 +49,7 @@ public:
     }
 
     std::shared_ptr<HttpResponse> renderPOST(const HttpRequest& req) override {
-        (void)req; 
+        (void)req;
         auto response = std::make_shared<HttpResponse>();
         response->setStatusCode(201);
         response->setBody("POST Response: " + req.getBody());
@@ -58,15 +57,16 @@ public:
     }
 
     std::shared_ptr<HttpResponse> renderPUT(const HttpRequest& req) override {
-        (void)req; 
+        (void)req;
         auto response = std::make_shared<HttpResponse>();
         response->setStatusCode(200);
         response->setBody("PUT Response: " + req.getArg("id"));
         return response;
     }
 
-    std::shared_ptr<HttpResponse> renderDELETE(const HttpRequest& req) override {
-        (void)req; 
+    std::shared_ptr<HttpResponse> renderDELETE(
+        const HttpRequest& req) override {
+        (void)req;
         auto response = std::make_shared<HttpResponse>();
         response->setStatusCode(204);
         response->setBody("");
@@ -101,7 +101,8 @@ protected:
     }
 
     void SetUp() override {
-        std::cout << "SetUp: tcpPort=" << tcpPort << ", udpPort=" << udpPort << std::endl;
+        std::cout << "SetUp: tcpPort=" << tcpPort << ", udpPort=" << udpPort
+                  << std::endl;
 
         // Start the webserver in a separate thread
         webserver.start();
@@ -116,14 +117,16 @@ protected:
     Webserver webserver;
 
     // Helper function to make HTTP requests using asio
-    std::string makeHttpRequest(const std::string& method, const std::string& path,
+    std::string makeHttpRequest(const std::string& method,
+                                const std::string& path,
                                 const std::string& body = "") {
         asio::io_context io_context;
         asio::ip::tcp::socket socket(io_context);
         asio::ip::tcp::resolver resolver(io_context);
 
         try {
-            auto endpoints = resolver.resolve("localhost", std::to_string(tcpPort));
+            auto endpoints =
+                resolver.resolve("localhost", std::to_string(tcpPort));
 
             asio::connect(socket, endpoints);
 
@@ -143,7 +146,8 @@ protected:
             asio::read_until(socket, response_stream, "\r\n\r\n", error);
 
             if (error) {
-                std::cerr << "makeHttpRequest: Error during read_until: " << error.message() << std::endl;
+                std::cerr << "makeHttpRequest: Error during read_until: "
+                          << error.message() << std::endl;
                 return "ERROR: " + error.message();
             }
 
@@ -170,8 +174,8 @@ protected:
             body_stream << response.rdbuf();
             std::string response_body = body_stream.str();
 
-            return http_version + " " + std::to_string(status_code) + " " + status_message + "\n" + headers +
-                   "\r\n" + response_body;
+            return http_version + " " + std::to_string(status_code) + " " +
+                   status_message + "\n" + headers + "\r\n" + response_body;
 
         } catch (std::exception& e) {
             std::cerr << "Exception: " << e.what() << std::endl;
@@ -189,34 +193,39 @@ int WebserverTest::nextAvailablePort = 8090;  // Start range at 8090
 
 TEST_F(WebserverTest, TestHttpGet) {
     std::string expectedResponse =
-        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nGET Response";
+        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "
+        "12\r\n\r\nGET Response";
     std::string response = makeHttpRequest("GET", "/test");
     ASSERT_EQ(response, expectedResponse);
 }
 
 TEST_F(WebserverTest, TestHttpPost) {
-    std::string expectedResponse = "HTTP/1.1 201 Created\r\nContent-Type: text/plain\r\nContent-Length: "
-                                   "24\r\n\r\nPOST Response: Test Body";
+    std::string expectedResponse =
+        "HTTP/1.1 201 Created\r\nContent-Type: text/plain\r\nContent-Length: "
+        "24\r\n\r\nPOST Response: Test Body";
     std::string response = makeHttpRequest("POST", "/test", "Test Body");
     ASSERT_EQ(response, expectedResponse);
 }
 
 TEST_F(WebserverTest, TestHttpPut) {
     std::string expectedResponse =
-        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 17\r\n\r\nPUT Response: 123";
+        "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: "
+        "17\r\n\r\nPUT Response: 123";
     std::string response = makeHttpRequest("PUT", "/test/123");
     ASSERT_EQ(response, expectedResponse);
 }
 
 TEST_F(WebserverTest, TestHttpDelete) {
-    std::string expectedResponse = "HTTP/1.1 204 No Content\r\nContent-Type: text/plain\r\n\r\n";
+    std::string expectedResponse =
+        "HTTP/1.1 204 No Content\r\nContent-Type: text/plain\r\n\r\n";
     std::string response = makeHttpRequest("DELETE", "/test/123");
     ASSERT_EQ(response, expectedResponse);
 }
 
 TEST_F(WebserverTest, TestHttpGetNotFound) {
     std::string expectedResponse =
-        "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: 9\r\n\r\nNot Found";
+        "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nContent-Length: "
+        "9\r\n\r\nNot Found";
     std::string response = makeHttpRequest("GET", "/nonexistent");
     ASSERT_EQ(response, expectedResponse);
 }

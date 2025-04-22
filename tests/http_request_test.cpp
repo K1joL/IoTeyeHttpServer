@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <ioteyeserver.hpp>
 
 using namespace ioteye;

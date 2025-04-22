@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <ioteyeserver.hpp>
 
 TEST(UtilsTest, SplitStringSplitsCorrectly) {
@@ -45,6 +46,7 @@ TEST(UtilsTest, HttpMethodToStringConvertsCorrectly) {
 
     {
         EXPECT_EQ(util::httpMethodToString(HttpMethod::UNKNOWN), "UNKNOWN");
-        EXPECT_EQ(util::httpMethodToString(static_cast<HttpMethod_t>(999)), "UNKNOWN");
+        EXPECT_EQ(util::httpMethodToString(static_cast<HttpMethod_t>(999)),
+                  "UNKNOWN");
     }
 }
