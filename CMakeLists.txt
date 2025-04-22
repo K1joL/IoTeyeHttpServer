@@ -26,6 +26,18 @@ project(ioteyeserver VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Define options
+option(ASIO_TAG "Asio git tag. Format: asio-*-**-*" "asio-1-31-0")
+option(ASIO_ENABLE_INSTALL "Install asio target." ON)
+option(ASIO_USE_CPM "Download Asio with CPM instead of FetchContent" ON)
+option(
+    ASIO_CPM_FETCHCONTENT_COMPAT
+    "Should asio be declared with FetchContent functions to be compatible. This doesn't not allow CPM cache to work."
+    OFF
+)
+option(IOTEYE_ENABLE_TESTS "Enable tests compilation" OFF)
+
+
 if(MSVC)
     add_compile_options(/W3)
 else()
@@ -49,17 +61,9 @@ if(asio_FOUND)
     message(STATUS "ASIO library found.")
 else()
     message(STATUS "ASIO library not found.")
-    option(ASIO_USE_CPM "Download Asio with CPM instead of FetchContent" ON)
-    option(
-        ASIO_CPM_FETCHCONTENT_COMPAT
-        "Should asio be declared with FetchContent functions to be compatible. This doesn't not allow CPM cache to work."
-        OFF
-    )
-    option(ASIO_ENABLE_INSTALL "Install asio target." ON)
     if(ASIO_ENABLE_INSTALL)
         message(STATUS "ASIO library will be installed. Use ASIO_ENABLE_INSTALL=OFF to off this option")
     endif()
-    option(ASIO_TAG "Asio git tag. Format: asio-*-**-*" "asio-1-31-0")
     # Download this repository
     fetch_asio()
 endif()
@@ -95,39 +99,45 @@ file(GLOB EXAMPLE_FILES "examples/*.cpp")
 foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
     add_example(${EXAMPLE_FILE})
 endforeach()
-if(MSVC)
-    message(WARNING "Tests cannot be built with MSVC!")
-else()
-    # --- Tests ---
-    enable_testing()
 
-    # Add GoogleTest (you might need to adjust the path based on your installation)
-    include(FetchContent)
-    FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest
-        GIT_TAG v1.14.0 # Or the version you prefer
-    )
-    FetchContent_MakeAvailable(googletest)
+if(IOTEYE_ENABLE_TESTS)
 
-    # Add tests executable
-    add_executable(ioteye_tests
-        tests/utils_test.cpp
-        tests/http_resource_test.cpp
-        tests/http_response_test.cpp
-        tests/http_request_test.cpp
-        tests/webserver_test.cpp
-    )
+    if(MSVC)
+        message(WARNING "Tests cannot be built with MSVC!")
+    else()
+        # --- Tests ---
+        message(STATUS "Tests compilation is ON!")
+        enable_testing()
 
-    target_link_libraries(ioteye_tests
-        ${PROJECT_NAME}
-        GTest::gtest_main
-        asio::asio
-    )
+        # Add GoogleTest (you might need to adjust the path based on your installation)
+        include(FetchContent)
+        FetchContent_Declare(
+            googletest
+            GIT_REPOSITORY https://github.com/google/googletest
+            GIT_TAG v1.14.0 # Or the version you prefer
+        )
+        FetchContent_MakeAvailable(googletest)
 
-    add_test(NAME webserver_tests COMMAND ioteye_tests)
+        # Function to add a test
+        function(add_test_executable TEST_FILE)
+            get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
+            add_executable(${TEST_NAME} ${TEST_FILE})
+            target_link_libraries(${TEST_NAME}
+                ${PROJECT_NAME}
+                GTest::gtest_main
+                asio::asio
+            )
+            add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+        endfunction()
+
+        # Add individual tests
+        add_test_executable(tests/utils_test.cpp)
+        add_test_executable(tests/http_resource_test.cpp)
+        add_test_executable(tests/http_response_test.cpp)
+        add_test_executable(tests/http_request_test.cpp)
+        add_test_executable(tests/webserver_test.cpp)
+    endif()
 endif()
-
 # --- Include Install/Uninstall Module ---
 if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     set(LIB_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/lib/)
