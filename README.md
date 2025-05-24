@@ -1,4 +1,4 @@
-# IoTeye Server
+# IoTeye Server Library
 
 IoTeye Server is a lightweight, configurable HTTP server based on [ASIO library](https://think-async.com/Asio/). This project aims to provide a robust and efficient server implementation for handling HTTP requests, suitable for embedded systems and IoT devices.
 
