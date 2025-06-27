@@ -24,15 +24,23 @@ SOFTWARE.
 
 #include "ioteyeserver/httpserver/http_resource.hpp"
 
+#include "http_resource.hpp"
+
 namespace ioteye {
 HttpResource::HttpResource(std::shared_ptr<HttpResourceHandler> handler,
-                           std::string uri)
-    : m_handler(handler), m_uri(uri) {
+                           const std::string& uri,
+                           const std::string& description)
+    : m_handler(handler), m_uri(uri), m_description(description) {
     m_isValid = createRegexFromURI(uri);
     m_allowedMethods = {{HttpMethod::HTTP_GET, true},
                         {HttpMethod::HTTP_POST, true},
                         {HttpMethod::HTTP_PUT, true},
                         {HttpMethod::HTTP_DELETE, true}};
+}
+
+HttpResource::HttpResource(std::shared_ptr<HttpResourceHandler> handler,
+                           const std::string& uri)
+    : HttpResource(handler, uri, "") {
 }
 
 std::shared_ptr<HttpResponse> HttpResourceHandler::render(
@@ -64,6 +72,26 @@ std::shared_ptr<HttpResponse> HttpResourceHandler::empty_render(
     const HttpRequest& req) {
     (void)req;  // Suppresses unused parameter warning
     return std::make_shared<HttpResponse>();
+}
+
+std::shared_ptr<HttpResourceHandler> HttpResource::getHandler() const {
+    return m_handler;
+}
+
+std::string HttpResource::getUri() const {
+    return m_uri;
+}
+
+std::regex HttpResource::getRegexUri() const {
+    return m_regexUri;
+}
+
+std::vector<std::string> HttpResource::getParamNames() const {
+    return m_paramNames;
+}
+
+bool HttpResource::getIsValid() const {
+    return m_isValid;
 }
 
 void HttpResource::setAllowing(HttpMethod_t httpMethod, bool allowed) {
@@ -137,7 +165,15 @@ std::vector<HttpMethod> HttpResource::getAllowedMethods() {
     return allowedMethods;
 }
 
-bool HttpResource::createRegexFromURI(std::string uri) {
+std::string HttpResource::getDescription() const {
+    return m_description;
+}
+
+void HttpResource::setDescription(const std::string& description) {
+    m_description = description;
+}
+
+bool HttpResource::createRegexFromURI(const std::string& uri) {
     std::string regexPattern = uri;
     m_paramNames.clear();
     size_t pos = regexPattern.find("{");
@@ -156,6 +192,35 @@ bool HttpResource::createRegexFromURI(std::string uri) {
     }
     m_regexUri = std::regex(regexPattern);
     return true;
+}
+
+InitHandler::InitHandler(const std::shared_ptr<ResourceMap> map) : m_serverResourceMap(map) {
+}
+
+std::shared_ptr<HttpResponse> InitHandler::renderGET(const HttpRequest& req) {
+    // Unused parameter fix
+    (void)req.getMethod();
+    debug::log("Init resource: GET called!");
+    std::stringstream responseBody;
+    auto it = m_serverResourceMap->cbegin();
+    responseBody << "{\n\t\"" << it->first << "\" : \""
+                 << it->second->getDescription();
+    it++;
+    for (; it != m_serverResourceMap->cend(); ++it) {
+        responseBody << "\",\n\t\"" << it->first << "\" : \""
+                     << (it->second->getDescription().empty()
+                             ? "No description"
+                             : it->second->getDescription());
+    }
+    responseBody << "\"\n}";
+    auto response =
+        std::make_shared<HttpResponse>(HttpStatusCode::OK, responseBody.str());
+    response->setContentType("application/json");
+    return response;
+}
+
+void InitHandler::setResourceMap(const std::shared_ptr<ResourceMap> resourceMap) {
+    m_serverResourceMap = resourceMap;
 }
 
 }  // namespace ioteye

@@ -33,6 +33,7 @@ SOFTWARE.
 #include <iostream>
 #include <memory>
 #include <regex>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -46,9 +47,10 @@ SOFTWARE.
 #include "ioteyeserver/utils.hpp"
 
 namespace ioteye {
-using ResourceMap = std::unordered_map<std::string, std::shared_ptr<HttpResource>>;
-using MethodHandler =
-    std::function<std::shared_ptr<HttpResponse>(std::shared_ptr<HttpResourceHandler>, const HttpRequest&)>;
+using ResourceMap =
+    std::unordered_map<std::string, std::shared_ptr<HttpResource>>;
+using MethodHandler = std::function<std::shared_ptr<HttpResponse>(
+    std::shared_ptr<HttpResourceHandler>, const HttpRequest&)>;
 class Webserver {
 public:
     Webserver();
@@ -65,13 +67,19 @@ public:
 
     class Builder {
     public:
-        Builder() = default;
+        Builder();
         Builder& setTcpPort(int port);
         Builder& setUdpPort(int port);
         Builder& setUdpOn();
         Builder& setBufferSize(size_t size);
-        Builder& setResource(const std::string& path, std::shared_ptr<HttpResourceHandler> resourceHandler);
+        Builder& setResource(
+            const std::string& path,
+            std::shared_ptr<HttpResourceHandler> resourceHandler,
+            const std::string& description = "");
         Builder& setResource(std::shared_ptr<HttpResource> resource);
+        Builder& setCustomInit(const std::string& path,
+                               std::shared_ptr<InitHandler> initHandler);
+        Builder& setCustomInit(std::shared_ptr<HttpResource> initResource);
         Webserver build();
 
     private:
@@ -80,26 +88,32 @@ public:
         bool m_isUdpOn = false;
         size_t m_bufferSize = 1024;
         size_t m_threadCount = 1;
-        ResourceMap m_resourceMap;
+        std::shared_ptr<ResourceMap> m_resourceMap;
+        std::shared_ptr<HttpResource> m_initResource;
     };
 
 private:
-    Webserver(int tcpPort, int udpPort, bool udpOn, ResourceMap resourceMap, size_t bufferSize);
+    Webserver(int tcpPort, int udpPort, bool udpOn,
+              std::shared_ptr<ResourceMap> resourceMap, size_t bufferSize);
 
     void acceptTcpConnection();
     void handleTcpConnection(std::shared_ptr<asio::ip::tcp::socket> socketPtr);
 
     void receiveUdpRequest();
-    void handleRequestData(const std::string& requestData,
-                           std::function<void(const ioteye::HttpResponse&)> sendResponse);
-    std::string getHeaderValue(const std::string& headers, const std::string& headerName);
-    std::shared_ptr<HttpResponse> handleRequest(const HttpRequest& request, const std::string& uriPattern);
-    bool matchUrl(HttpRequest& request, const std::shared_ptr<HttpResource> resource);
+    void handleRequestData(
+        const std::string& requestData,
+        std::function<void(const ioteye::HttpResponse&)> sendResponse);
+    std::string getHeaderValue(const std::string& headers,
+                               const std::string& headerName);
+    std::shared_ptr<HttpResponse> handleRequest(const HttpRequest& request,
+                                                const std::string& uriPattern);
+    bool matchUrl(HttpRequest& request,
+                  const std::shared_ptr<HttpResource> resource);
 
 private:
     int m_tcpPort = 8080;  // Default tcp port
     int m_udpPort = 8081;  // Default udp port
-    ResourceMap m_resourceMap;
+    std::shared_ptr<ResourceMap> m_resourceMap;
     // TCP Socket
     asio::io_context m_ioContext;
     asio::ip::tcp::acceptor m_tcpAcceptor;

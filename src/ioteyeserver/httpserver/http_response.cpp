@@ -26,8 +26,9 @@ SOFTWARE.
 
 namespace ioteye {
 
-HttpResponse::HttpResponse(int statusCode, const std::string& body,
-                           const std::unordered_map<std::string, std::string>& headers)
+HttpResponse::HttpResponse(
+    int statusCode, const std::string& body,
+    const std::unordered_map<std::string, std::string>& headers)
     : m_statusCode(statusCode), m_body(body), m_headers(headers) {
     if (m_headers.find("Content-Type") == m_headers.end()) {
         m_headers["Content-Type"] = "text/plain";
@@ -36,7 +37,8 @@ HttpResponse::HttpResponse(int statusCode, const std::string& body,
 
 std::string HttpResponse::toString() const {
     std::stringstream ss;
-    ss << "HTTP/1.1 " << m_statusCode << " " << util::getStatusMessage(m_statusCode) << "\r\n";
+    ss << "HTTP/1.1 " << m_statusCode << " "
+       << util::getStatusMessage(m_statusCode) << "\r\n";
     for (const auto& pair : m_headers) {
         ss << pair.first << ": " << pair.second << "\r\n";
     }
@@ -87,43 +89,53 @@ std::string HttpResponse::getBody() const {
 }
 
 std::shared_ptr<HttpResponse> createBadRequestResponse() {
-    auto response = std::make_shared<HttpResponse>(HttpStatusCode::BAD_REQUEST, "Bad Request");
+    auto response = std::make_shared<HttpResponse>(HttpStatusCode::BAD_REQUEST,
+                                                   "Bad Request");
     return response;
 }
 std::shared_ptr<HttpResponse> createNotFoundResponse() {
-    auto response = std::make_shared<HttpResponse>(HttpStatusCode::NOT_FOUND, "Not Found");
+    auto response =
+        std::make_shared<HttpResponse>(HttpStatusCode::NOT_FOUND, "Not Found");
     return response;
 }
-std::shared_ptr<HttpResponse> createMethodNotAllowed(const std::string& allowedMethods) {
-    auto response = std::make_shared<HttpResponse>(HttpStatusCode::METHOD_NOT_ALLOWED, "Method not allowed");
+std::shared_ptr<HttpResponse> createMethodNotAllowed(
+    const std::string& allowedMethods) {
+    auto response = std::make_shared<HttpResponse>(
+        HttpStatusCode::METHOD_NOT_ALLOWED, "Method not allowed");
     response->setHeader("Allow", allowedMethods);
     return response;
 }
 
-void sendUdpResponse(const HttpResponse& response, std::shared_ptr<asio::ip::udp::socket> socket,
+void sendUdpResponse(const HttpResponse& response,
+                     std::shared_ptr<asio::ip::udp::socket> socket,
                      asio::ip::udp::endpoint& destination) {
     debug::log(response.toString());
-    socket->async_send_to(asio::buffer(response.toString()), destination,
-                          [](const asio::error_code& error, std::size_t bytesTransfered) {
-                              if (!error) {
-                                  debug::log("[UDP] Response sent successfully. BytesTransfered: ",
-                                             bytesTransfered);
-                              } else {
-                                  debug::log("[UDP] Error sending response: ", error.message());
-                              }
-                          });
+    socket->async_send_to(
+        asio::buffer(response.toString()), destination,
+        [](const asio::error_code& error, std::size_t bytesTransfered) {
+            if (!error) {
+                debug::log(
+                    "[UDP] Response sent successfully. BytesTransfered: ",
+                    bytesTransfered);
+            } else {
+                debug::log("[UDP] Error sending response: ", error.message());
+            }
+        });
 }
 
-void sendTcpResponse(const HttpResponse& response, std::shared_ptr<asio::ip::tcp::socket> socket) {
+void sendTcpResponse(const HttpResponse& response,
+                     std::shared_ptr<asio::ip::tcp::socket> socket) {
     debug::log(response.toString());
-    asio::async_write(*socket, asio::buffer(response.toString()),
-                      [socket](const asio::error_code& error, std::size_t bytesTransfered) {
-                          if (!error) {
-                              debug::log("[TCP] Response sent successfully. BytesTransfered: ",
-                                         bytesTransfered);
-                          } else {
-                              debug::log("[TCP] Error sending response: ", error.message());
-                          }
-                      });
+    asio::async_write(
+        *socket, asio::buffer(response.toString()),
+        [socket](const asio::error_code& error, std::size_t bytesTransfered) {
+            if (!error) {
+                debug::log(
+                    "[TCP] Response sent successfully. BytesTransfered: ",
+                    bytesTransfered);
+            } else {
+                debug::log("[TCP] Error sending response: ", error.message());
+            }
+        });
 }
 }  // namespace ioteye
