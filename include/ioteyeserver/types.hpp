@@ -27,6 +27,7 @@ SOFTWARE.
 
 #include <string>
 #include <unordered_map>
+#include <stdint.h>
 
 namespace ioteye {
 
