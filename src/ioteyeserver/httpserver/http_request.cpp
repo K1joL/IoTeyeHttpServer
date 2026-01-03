@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "ioteyeserver/httpserver/http_request.hpp"
+#include "http_request.hpp"
 namespace ioteye {
 
 std::string HttpRequest::getArg(const std::string& arg_name) const {
@@ -75,10 +75,33 @@ void HttpRequest::setArgs(
 
 void HttpRequest::setHeaders(const std::string& headers) {
     m_headers = headers;
+    parseHeaders(headers);
 }
 
 void HttpRequest::setBody(const std::string& body) {
     m_body = body;
 }
 
+std::string HttpRequest::getHeaderValue(const std::string& header) const {
+    if (header.empty() || m_headersMap.find(header) == m_headersMap.end())
+        return "";
+    return m_headersMap.at(header);
+}
+
+size_t HttpRequest::getContentLength() const {
+    return std::stoi(getHeaderValue("Content-Length"));
+}
+
+std::string HttpRequest::getContentType() const {
+    return getHeaderValue("Content-Type");
+}
+
+void HttpRequest::parseHeaders(const std::string& headers) {
+    std::vector<std::string> headerStrings = util::splitString(headers, '\n');
+    std::vector<std::string> headerSplit;
+    for (std::string& headerStr : headerStrings) {
+        headerSplit = util::splitString(headerStr, ':');
+        m_headersMap[headerSplit[0]] = headerSplit[1].erase(0, 1);
+    }
+}
 }  // namespace ioteye

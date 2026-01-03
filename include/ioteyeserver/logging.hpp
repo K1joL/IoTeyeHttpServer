@@ -38,9 +38,7 @@ inline void log(Args&&... args) {
 }
 #else
 template <typename... Args>
-inline void log(Args&&... args) {
-    // Dummy code to prevent unused parameter warning
-    (void)std::initializer_list<int>{(std::forward<Args>(args), 0)...};
+inline void log(Args&&... /* args */) {
 }
 #endif
 }  // namespace ioteye::debug

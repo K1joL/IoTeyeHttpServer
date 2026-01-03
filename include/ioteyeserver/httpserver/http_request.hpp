@@ -27,8 +27,10 @@ SOFTWARE.
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "ioteyeserver/types.hpp"
+#include "ioteyeserver/utils.hpp"
 
 namespace ioteye {
 class HttpRequest {
@@ -47,6 +49,9 @@ public:
     const std::unordered_map<std::string, std::string>& getArgs() const;
     const std::string& getHeaders() const;
     const std::string& getBody() const;
+    std::string getHeaderValue(const std::string& header) const;
+    size_t getContentLength() const;
+    std::string getContentType() const;
 
     // Setters
     void setMethod(HttpMethod method);
@@ -56,10 +61,14 @@ public:
     void setBody(const std::string& body);
 
 private:
+    void parseHeaders(const std::string& headers);
+
+private:
     HttpMethod m_method = HttpMethod::HTTP_METHOD_MAX;
     std::string m_uri;
     std::unordered_map<std::string, std::string> m_args;
     std::string m_headers;
+    std::unordered_map<std::string, std::string> m_headersMap;
     std::string m_body;
 };
 }  // namespace ioteye
