@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "http_request.hpp"
+#include "ioteyeserver/httpserver/http_request.hpp"
 namespace ioteye {
 
 std::string HttpRequest::getArg(const std::string& arg_name) const {

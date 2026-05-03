@@ -24,8 +24,6 @@ SOFTWARE.
 
 #include "ioteyeserver/httpserver/webserver.hpp"
 
-#include "webserver.hpp"
-
 namespace ioteye {
 
 Webserver::Webserver(int tcpPort, int udpPort, bool udpOn,

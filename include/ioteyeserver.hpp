@@ -34,6 +34,7 @@ SOFTWARE.
  * of the library.
  */
 
+#include "ioteyeserver/asio_compat.hpp"
 #include "ioteyeserver/httpserver/webserver.hpp"
 #include "ioteyeserver/httpserver/http_request.hpp"
 #include "ioteyeserver/httpserver/http_response.hpp"

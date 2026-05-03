@@ -24,8 +24,6 @@ SOFTWARE.
 
 #include "ioteyeserver/httpserver/http_resource.hpp"
 
-#include "http_resource.hpp"
-
 namespace ioteye {
 HttpResource::HttpResource(std::shared_ptr<HttpResourceHandler> handler,
                            const std::string& uri,

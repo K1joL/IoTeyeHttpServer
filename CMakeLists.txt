@@ -27,16 +27,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Define options
-option(ASIO_TAG "Asio git tag. Format: asio-*-**-*" "asio-1-31-0")
-option(ASIO_ENABLE_INSTALL "Install asio target." ON)
-option(ASIO_USE_CPM "Download Asio with CPM instead of FetchContent" ON)
-option(
-    ASIO_CPM_FETCHCONTENT_COMPAT
-    "Should asio be declared with FetchContent functions to be compatible. This doesn't not allow CPM cache to work."
-    OFF
-)
 option(IOTEYE_ENABLE_TESTS "Enable tests compilation" OFF)
+option(IOTEYE_ENABLE_EXAMPLES "Enable tests compilation" OFF)
+option(IOTEYE_USE_BOOST_ASIO "Use Boost.Asio instead of standalone Asio" OFF)
 
+# Include standard install directories
+include(GNUInstallDirs)
 
 if(MSVC)
     add_compile_options(/W3)
@@ -44,30 +40,20 @@ else()
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-include_directories(include)
-include_directories(include/ioteyeserver)
-include_directories(include/ioteyeserver/httpserver)
-include(cmake/CMakeModules/FetchASIO.cmake)
-
 # Set the default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
 endif()
 message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
-# --- Download ASIO ---
-find_package(asio QUIET)
-if(asio_FOUND)
-    message(STATUS "ASIO library found.")
+# Find the requested dependency
+if(IOTEYE_USE_BOOST_ASIO)
+    message(STATUS "ioteyeserver: Using Boost.Asio")
+    find_package(Boost REQUIRED)
 else()
-    message(STATUS "ASIO library not found.")
-    if(ASIO_ENABLE_INSTALL)
-        message(STATUS "ASIO library will be installed. Use ASIO_ENABLE_INSTALL=OFF to off this option")
-    endif()
-    # Download this repository
-    fetch_asio()
+    message(STATUS "ioteyeserver: Using standalone Asio")
+    find_package(asio REQUIRED)
 endif()
-# --- End Download ASIO ---
 
 add_library(${PROJECT_NAME}
     src/ioteyeserver/httpserver/http_resource.cpp
@@ -77,8 +63,20 @@ add_library(${PROJECT_NAME}
     src/ioteyeserver/utils.cpp
 )
 
-# Add target link libraries
-target_link_libraries(${PROJECT_NAME} PRIVATE asio::asio)
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+# Conditionally link and add compile definitions
+if(IOTEYE_USE_BOOST_ASIO)
+    # Modern CMake provides Boost::headers for header-only boost libraries
+    target_link_libraries(${PROJECT_NAME} PUBLIC Boost::headers)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC IOTEYE_USE_BOOST_ASIO)
+else()
+    target_link_libraries(${PROJECT_NAME} PUBLIC asio::asio)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC ASIO_STANDALONE)
+endif()
 
 # Conditionally add logging definitions
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -86,19 +84,21 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(ENABLE_LOGGING)
 endif()
 
-# --- Examples ---
-# Function to add examples automatically
-function(add_example FILE_NAME)
-    get_filename_component(EXAMPLE_NAME ${FILE_NAME} NAME_WE)
-    add_executable(${EXAMPLE_NAME} ${FILE_NAME})
-    target_link_libraries(${EXAMPLE_NAME} ${PROJECT_NAME} asio::asio)
-endfunction()
+if(IOTEYE_ENABLE_EXAMPLES)
+    # --- Examples ---
+    # Function to add examples automatically
+    function(add_example FILE_NAME)
+        get_filename_component(EXAMPLE_NAME ${FILE_NAME} NAME_WE)
+        add_executable(${EXAMPLE_NAME} ${FILE_NAME})
+        target_link_libraries(${EXAMPLE_NAME} ${PROJECT_NAME} asio::asio)
+    endfunction()
 
-# Automatically add examples
-file(GLOB EXAMPLE_FILES "examples/*.cpp")
-foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
-    add_example(${EXAMPLE_FILE})
-endforeach()
+    # Automatically add examples
+    file(GLOB EXAMPLE_FILES "examples/*.cpp")
+    foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
+        add_example(${EXAMPLE_FILE})
+    endforeach()
+endif()
 
 if(IOTEYE_ENABLE_TESTS)
 
@@ -138,36 +138,38 @@ if(IOTEYE_ENABLE_TESTS)
         add_test_executable(tests/webserver_test.cpp)
     endif()
 endif()
-# --- Include Install/Uninstall Module ---
-if(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
-    set(LIB_INSTALL_PATH ${CMAKE_INSTALL_PREFIX}/lib/)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
-    set(LIB_INSTALL_PATH /usr/local/lib/)
-endif()
 
+# --- Installation ---
+# 1. Install the target and assign it to an EXPORT set
 install(TARGETS ${PROJECT_NAME}
-    LIBRARY DESTINATION ${LIB_INSTALL_PATH}
-    ARCHIVE DESTINATION ${LIB_INSTALL_PATH}
-    RUNTIME DESTINATION ${LIB_INSTALL_PATH}
+    EXPORT ${PROJECT_NAME}Targets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-install(FILES include/ioteyeserver.hpp DESTINATION ${CMAKE_INSTALL_PREFIX}/include) # Install general header to include directly
-install(DIRECTORY include/ioteyeserver/ DESTINATION ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME}) # Install rest of headers to ioteyeserver
+# 2. Install your headers
+install(FILES include/ioteyeserver.hpp
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+install(DIRECTORY include/ioteyeserver/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ioteyeserver
+)
 
-# Create and install the CMake configuration files
+# 3. Generate and install the Targets file automatically
+install(EXPORT ${PROJECT_NAME}Targets
+    FILE ${PROJECT_NAME}Targets.cmake
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+)
+
+# 4. Generate and install the Config file
 include(CMakePackageConfigHelpers)
 configure_package_config_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ioteyeserverConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverConfig.cmake"
-    INSTALL_DESTINATION lib/cmake/ioteyeserver
-    PATH_VARS CMAKE_INSTALL_PREFIX
-)
-
-configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/ioteyeserverTargets.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverTargets.cmake"
-    INSTALL_DESTINATION lib/cmake/ioteyeserver
-    PATH_VARS CMAKE_INSTALL_PREFIX
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 
 write_basic_package_version_file(
@@ -179,14 +181,14 @@ write_basic_package_version_file(
 install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverConfig.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverConfigVersion.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/ioteyeserverTargets.cmake"
-    DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/ioteyeserver"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
+
 # make uninstall
-add_custom_target("uninstall" COMMENT "Uninstall installed files")
+add_custom_target(uninstall COMMENT "Uninstall installed files")
 add_custom_command(
-    TARGET "uninstall"
+    TARGET uninstall
     POST_BUILD
     COMMENT "Uninstall files with install_manifest.txt"
-    COMMAND xargs rm -vfd < install_manifest.txt || echo Nothing in install_manifest.txt to be uninstalled!
+    COMMAND xargs rm -vfd < install_manifest.txt || echo "Nothing in install_manifest.txt to be uninstalled!"
 )

@@ -25,9 +25,6 @@ SOFTWARE.
 #ifndef IOTEYE_WEBSERVER_HPP
 #define IOTEYE_WEBSERVER_HPP
 
-#include <asio.hpp>
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
 #include <atomic>
 #include <functional>
 #include <iostream>
@@ -39,6 +36,7 @@ SOFTWARE.
 #include <unordered_map>
 #include <vector>
 
+#include "ioteyeserver/asio_compat.hpp"
 #include "ioteyeserver/httpserver/http_request.hpp"
 #include "ioteyeserver/httpserver/http_resource.hpp"
 #include "ioteyeserver/httpserver/http_response.hpp"
